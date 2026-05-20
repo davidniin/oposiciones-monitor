@@ -57,7 +57,6 @@ Si los dos comandos van bien, el código está sano. Aún no se envía ningún e
 
 ### Paso 5 — Crear cuenta de Resend (gratis, 100 emails/día)
 
-re_ZpJKVT2Z_EKFkb6DXMy3tHNzsG9SBgieW
 1. Entra en [resend.com](https://resend.com) y regístrate (sin tarjeta).
 2. Ve a **API Keys** → **Create API Key** → nombre "oposiciones-monitor", permission "Sending access".
 3. Copia la clave (empieza por `re_`). Guárdala en algún sitio temporal —
