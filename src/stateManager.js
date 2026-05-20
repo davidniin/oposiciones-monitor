@@ -1,5 +1,4 @@
 import { readFile, writeFile, rename, mkdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -16,11 +15,6 @@ export function emptyState() {
 }
 
 export async function loadState(path = DEFAULT_STATE_PATH) {
-  if (!existsSync(path)) {
-    console.warn(`[stateManager] state file not found at ${path}, using empty state`);
-    return emptyState();
-  }
-
   try {
     const raw = await readFile(path, "utf8");
     const data = JSON.parse(raw);
@@ -32,7 +26,11 @@ export async function loadState(path = DEFAULT_STATE_PATH) {
       lastRunIso: data.last_run_iso ?? null,
     };
   } catch (err) {
-    console.warn(`[stateManager] failed to parse ${path}: ${err.message}, using empty state`);
+    if (err.code === "ENOENT") {
+      console.warn(`[stateManager] state file not found at ${path}, using empty state`);
+    } else {
+      console.warn(`[stateManager] failed to parse ${path}: ${err.message}, using empty state`);
+    }
     return emptyState();
   }
 }

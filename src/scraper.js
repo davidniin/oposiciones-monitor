@@ -7,32 +7,42 @@ export const SEARCH_URL =
   "ordenacio=DEFAULT&ordre=DESC&showAs=GRID&" +
   "filtreEstat%5BterminiPendent%5D=1&filtreEstat%5BterminiObert%5D=1";
 export const USER_AGENT =
-  "oposiciones-monitor/1.0 (+https://github.com/USER/oposiciones-monitor)";
+  "oposiciones-monitor/1.0 (+https://github.com/davidniin/oposiciones-monitor)";
 
 const OFFER_PATH_RE = /^\/oposicions\/(\d+)\//;
 
-export async function fetchOffers({ timeoutMs = 30000 } = {}) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+export async function fetchOffers({ timeoutMs = 30000, retries = 2 } = {}) {
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(SEARCH_URL, {
+        headers: {
+          "User-Agent": USER_AGENT,
+          "Accept-Language": "es-ES,ca-ES;q=0.9,es;q=0.8",
+        },
+        signal: controller.signal,
+      });
 
-  try {
-    const res = await fetch(SEARCH_URL, {
-      headers: {
-        "User-Agent": USER_AGENT,
-        "Accept-Language": "es-ES,ca-ES;q=0.9,es;q=0.8",
-      },
-      signal: controller.signal,
-    });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} ${res.statusText} fetching ${SEARCH_URL}`);
+      }
 
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} ${res.statusText} fetching ${SEARCH_URL}`);
+      const html = await res.text();
+      return parseOffers(html);
+    } catch (err) {
+      lastError = err;
+      if (attempt < retries) {
+        const delay = 5000 * (attempt + 1);
+        console.warn(`[scraper] attempt ${attempt + 1} failed: ${err.message} — retrying in ${delay / 1000}s`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const html = await res.text();
-    return parseOffers(html);
-  } finally {
-    clearTimeout(timeout);
   }
+  throw lastError;
 }
 
 export function parseOffers(html) {
