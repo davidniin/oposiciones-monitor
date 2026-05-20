@@ -1,8 +1,6 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 import { SEARCH_URL } from "./scraper.js";
-
-export const FROM_ADDRESS = "Oposicions Monitor <onboarding@resend.dev>";
 
 function escapeHtml(text) {
   return String(text ?? "")
@@ -13,10 +11,18 @@ function escapeHtml(text) {
     .replaceAll("'", "&#39;");
 }
 
+function createTransport(gmailUser, gmailPass) {
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: gmailUser, pass: gmailPass },
+  });
+}
+
 export async function sendNewOffersEmail({
   offers,
   recipients,
-  apiKey,
+  gmailUser,
+  gmailPass,
   dryRun = false,
 }) {
   if (!recipients || recipients.length === 0) throw new Error("recipients cannot be empty");
@@ -36,7 +42,6 @@ export async function sendNewOffersEmail({
   if (dryRun) {
     console.log("[DRY-RUN] Would send new offers email");
     console.log(`[DRY-RUN] To: ${recipients.join(", ")}`);
-    console.log(`[DRY-RUN] From: ${FROM_ADDRESS}`);
     console.log(`[DRY-RUN] Subject: ${subject}`);
     console.log(`[DRY-RUN] Offers: ${count}`);
     for (const o of offers) {
@@ -45,21 +50,20 @@ export async function sendNewOffersEmail({
     return;
   }
 
-  const resend = new Resend(apiKey);
-  const { error } = await resend.emails.send({
-    from: FROM_ADDRESS,
-    to: recipients,
+  const transporter = createTransport(gmailUser, gmailPass);
+  await transporter.sendMail({
+    from: gmailUser,
+    to: recipients.join(", "),
     subject,
     html,
   });
-
-  if (error) throw new Error(`Resend error: ${error.message ?? JSON.stringify(error)}`);
   console.log(`[notifier] Sent new offers email to ${recipients.join(", ")} (${count} offers)`);
 }
 
 export async function sendFailureAlertEmail({
   recipient,
-  apiKey,
+  gmailUser,
+  gmailPass,
   failureCount,
   lastError,
   dryRun = false,
@@ -84,15 +88,13 @@ export async function sendFailureAlertEmail({
     return;
   }
 
-  const resend = new Resend(apiKey);
-  const { error } = await resend.emails.send({
-    from: FROM_ADDRESS,
-    to: [recipient],
+  const transporter = createTransport(gmailUser, gmailPass);
+  await transporter.sendMail({
+    from: gmailUser,
+    to: recipient,
     subject,
     text,
   });
-
-  if (error) throw new Error(`Resend error: ${error.message ?? JSON.stringify(error)}`);
   console.warn(`[notifier] Sent failure alert to ${recipient} (failures=${failureCount})`);
 }
 

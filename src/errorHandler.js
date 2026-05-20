@@ -13,7 +13,8 @@ export async function recordFailure({
   state,
   error,
   techEmail,
-  apiKey,
+  gmailUser,
+  gmailPass,
   dryRun = false,
 }) {
   state.consecutiveFailures += 1;
@@ -33,7 +34,8 @@ export async function recordFailure({
   try {
     await sendFailureAlertEmail({
       recipient: techEmail,
-      apiKey,
+      gmailUser,
+      gmailPass,
       failureCount: state.consecutiveFailures,
       lastError: errorText,
       dryRun,

@@ -31,7 +31,7 @@ describe("recordFailure", () => {
       state,
       error: new Error("x"),
       techEmail: "t@e.com",
-      apiKey: "k",
+      gmailUser: "bot@gmail.com", gmailPass: "pass",
     });
     expect(state.consecutiveFailures).toBe(1);
   });
@@ -43,7 +43,7 @@ describe("recordFailure", () => {
       state,
       error: new Error("x"),
       techEmail: "t@e.com",
-      apiKey: "k",
+      gmailUser: "bot@gmail.com", gmailPass: "pass",
     });
     expect(state.consecutiveFailures).toBe(2);
     expect(sendFailureAlertEmail).not.toHaveBeenCalled();
@@ -56,7 +56,7 @@ describe("recordFailure", () => {
       state,
       error: new Error("boom"),
       techEmail: "t@e.com",
-      apiKey: "k",
+      gmailUser: "bot@gmail.com", gmailPass: "pass",
     });
     expect(state.consecutiveFailures).toBe(FAILURE_THRESHOLD);
     expect(sendFailureAlertEmail).toHaveBeenCalledTimes(1);
@@ -67,15 +67,15 @@ describe("recordFailure", () => {
     state.consecutiveFailures = 3;
 
     // failure 4
-    await recordFailure({ state, error: new Error("e"), techEmail: "t@e.com", apiKey: "k" });
+    await recordFailure({ state, error: new Error("e"), techEmail: "t@e.com", gmailUser: "bot@gmail.com", gmailPass: "pass" });
     expect(sendFailureAlertEmail).not.toHaveBeenCalled();
 
     // failure 5
-    await recordFailure({ state, error: new Error("e"), techEmail: "t@e.com", apiKey: "k" });
+    await recordFailure({ state, error: new Error("e"), techEmail: "t@e.com", gmailUser: "bot@gmail.com", gmailPass: "pass" });
     expect(sendFailureAlertEmail).not.toHaveBeenCalled();
 
     // failure 6
-    await recordFailure({ state, error: new Error("e"), techEmail: "t@e.com", apiKey: "k" });
+    await recordFailure({ state, error: new Error("e"), techEmail: "t@e.com", gmailUser: "bot@gmail.com", gmailPass: "pass" });
     expect(sendFailureAlertEmail).toHaveBeenCalledTimes(1);
   });
 
@@ -83,7 +83,7 @@ describe("recordFailure", () => {
     const state = emptyState();
     state.consecutiveFailures = FAILURE_THRESHOLD - 1;
     await expect(
-      recordFailure({ state, error: new Error("x"), techEmail: "", apiKey: "k" }),
+      recordFailure({ state, error: new Error("x"), techEmail: "", gmailUser: "bot@gmail.com", gmailPass: "pass" }),
     ).resolves.not.toThrow();
     expect(sendFailureAlertEmail).not.toHaveBeenCalled();
   });
@@ -93,7 +93,7 @@ describe("recordFailure", () => {
     const state = emptyState();
     state.consecutiveFailures = FAILURE_THRESHOLD - 1;
     await expect(
-      recordFailure({ state, error: new Error("x"), techEmail: "t@e.com", apiKey: "k" }),
+      recordFailure({ state, error: new Error("x"), techEmail: "t@e.com", gmailUser: "bot@gmail.com", gmailPass: "pass" }),
     ).resolves.not.toThrow();
   });
 
@@ -101,7 +101,7 @@ describe("recordFailure", () => {
     const state = emptyState();
     state.consecutiveFailures = FAILURE_THRESHOLD - 1;
     const longErr = new Error("a".repeat(5000));
-    await recordFailure({ state, error: longErr, techEmail: "t@e.com", apiKey: "k" });
+    await recordFailure({ state, error: longErr, techEmail: "t@e.com", gmailUser: "bot@gmail.com", gmailPass: "pass" });
     const callArgs = sendFailureAlertEmail.mock.calls[0][0];
     expect(callArgs.lastError.length).toBe(2000);
   });

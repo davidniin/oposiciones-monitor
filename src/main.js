@@ -25,7 +25,8 @@ function getEnv(name, { required = true } = {}) {
 async function main() {
   const { dryRun } = parseArgs(process.argv.slice(2));
 
-  const apiKey = getEnv("RESEND_API_KEY", { required: !dryRun });
+  const gmailUser = getEnv("GMAIL_USER", { required: !dryRun });
+  const gmailPass = getEnv("GMAIL_APP_PASSWORD", { required: !dryRun });
   const recipients = getEnv("RECIPIENT_EMAIL", { required: !dryRun })
     .split(",")
     .map((s) => s.trim())
@@ -43,7 +44,7 @@ async function main() {
   try {
     offers = await fetchOffers();
   } catch (err) {
-    await recordFailure({ state, error: err, techEmail, apiKey, dryRun });
+    await recordFailure({ state, error: err, techEmail, gmailUser, gmailPass, dryRun });
     if (!dryRun) await saveState(state);
     console.error(`[main] scraper failed: ${err.message}`);
     process.exit(1);
@@ -53,7 +54,7 @@ async function main() {
 
   if (offers.length === 0) {
     const err = new Error("scraper returned 0 offers (anomaly)");
-    await recordFailure({ state, error: err, techEmail, apiKey, dryRun });
+    await recordFailure({ state, error: err, techEmail, gmailUser, gmailPass, dryRun });
     if (!dryRun) await saveState(state);
     console.warn(`[main] anomaly: 0 offers parsed`);
     return;
@@ -76,7 +77,7 @@ async function main() {
   }
 
   if (newOffers.length > 0) {
-    await sendNewOffersEmail({ offers: newOffers, recipients, apiKey, dryRun });
+    await sendNewOffersEmail({ offers: newOffers, recipients, gmailUser, gmailPass, dryRun });
     markSeen(state, newIds);
   }
 

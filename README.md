@@ -6,7 +6,8 @@ Monitors [cido.diba.cat](https://cido.diba.cat/oposicions) for new "Educació so
 
 | Variable | Description |
 |---|---|
-| `RESEND_API_KEY` | API key from [resend.com](https://resend.com) |
+| `GMAIL_USER` | Gmail address used to send emails (e.g. `bot@gmail.com`) |
+| `GMAIL_APP_PASSWORD` | [Gmail App Password](https://myaccount.google.com/apppasswords) — requires 2FA enabled on the account |
 | `RECIPIENT_EMAIL` | Comma-separated list of notification recipients (e.g. `a@example.com,b@example.com`) |
 | `TECH_EMAIL` | Email for failure alerts after 3 consecutive scraper errors |
 
