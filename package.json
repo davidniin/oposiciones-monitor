@@ -1,0 +1,23 @@
+{
+  "name": "oposiciones-monitor",
+  "version": "1.0.0",
+  "description": "Monitor automatico de oposiciones de cido.diba.cat (Educacio social) con notificacion por email",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "dry-run": "node src/main.js --dry-run",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "resend": "^4.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.0"
+  }
+}
