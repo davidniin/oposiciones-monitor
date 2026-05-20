@@ -26,7 +26,10 @@ async function main() {
   const { dryRun } = parseArgs(process.argv.slice(2));
 
   const apiKey = getEnv("RESEND_API_KEY", { required: !dryRun });
-  const recipient = getEnv("RECIPIENT_EMAIL", { required: !dryRun });
+  const recipients = getEnv("RECIPIENT_EMAIL", { required: !dryRun })
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   const techEmail = getEnv("TECH_EMAIL", { required: false });
 
   console.log(`[main] starting${dryRun ? " (DRY-RUN)" : ""}`);
@@ -73,7 +76,7 @@ async function main() {
   }
 
   if (newOffers.length > 0) {
-    await sendNewOffersEmail({ offers: newOffers, recipient, apiKey, dryRun });
+    await sendNewOffersEmail({ offers: newOffers, recipients, apiKey, dryRun });
     markSeen(state, newIds);
   }
 

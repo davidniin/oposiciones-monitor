@@ -15,11 +15,11 @@ function escapeHtml(text) {
 
 export async function sendNewOffersEmail({
   offers,
-  recipient,
+  recipients,
   apiKey,
   dryRun = false,
 }) {
-  if (!recipient) throw new Error("recipient cannot be empty");
+  if (!recipients || recipients.length === 0) throw new Error("recipients cannot be empty");
   if (!offers || offers.length === 0) {
     console.warn("[notifier] sendNewOffersEmail called with empty offers, skipping");
     return;
@@ -35,7 +35,7 @@ export async function sendNewOffersEmail({
 
   if (dryRun) {
     console.log("[DRY-RUN] Would send new offers email");
-    console.log(`[DRY-RUN] To: ${recipient}`);
+    console.log(`[DRY-RUN] To: ${recipients.join(", ")}`);
     console.log(`[DRY-RUN] From: ${FROM_ADDRESS}`);
     console.log(`[DRY-RUN] Subject: ${subject}`);
     console.log(`[DRY-RUN] Offers: ${count}`);
@@ -48,13 +48,13 @@ export async function sendNewOffersEmail({
   const resend = new Resend(apiKey);
   const { error } = await resend.emails.send({
     from: FROM_ADDRESS,
-    to: [recipient],
+    to: recipients,
     subject,
     html,
   });
 
   if (error) throw new Error(`Resend error: ${error.message ?? JSON.stringify(error)}`);
-  console.log(`[notifier] Sent new offers email to ${recipient} (${count} offers)`);
+  console.log(`[notifier] Sent new offers email to ${recipients.join(", ")} (${count} offers)`);
 }
 
 export async function sendFailureAlertEmail({

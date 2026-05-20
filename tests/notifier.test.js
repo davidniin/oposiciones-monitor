@@ -24,16 +24,16 @@ beforeEach(() => {
 });
 
 describe("sendNewOffersEmail", () => {
-  it("lanza si recipient está vacío", async () => {
+  it("lanza si recipients está vacío", async () => {
     await expect(
-      sendNewOffersEmail({ offers: [sampleOffer], recipient: "", apiKey: "k" }),
-    ).rejects.toThrow(/recipient/);
+      sendNewOffersEmail({ offers: [sampleOffer], recipients: [], apiKey: "k" }),
+    ).rejects.toThrow(/recipients/);
   });
 
   it("no llama a Resend en dryRun", async () => {
     await sendNewOffersEmail({
       offers: [sampleOffer],
-      recipient: "novia@example.com",
+      recipients: ["novia@example.com"],
       apiKey: "key",
       dryRun: true,
     });
@@ -43,7 +43,7 @@ describe("sendNewOffersEmail", () => {
   it("usa asunto plural cuando hay varias ofertas", async () => {
     await sendNewOffersEmail({
       offers: [sampleOffer, { ...sampleOffer, id: "2" }],
-      recipient: "novia@example.com",
+      recipients: ["novia@example.com"],
       apiKey: "key",
     });
     expect(sendMock).toHaveBeenCalledOnce();
@@ -53,10 +53,20 @@ describe("sendNewOffersEmail", () => {
     expect(arg.html).toContain("Educador/a social");
   });
 
+  it("envía a múltiples destinatarios", async () => {
+    await sendNewOffersEmail({
+      offers: [sampleOffer],
+      recipients: ["a@example.com", "b@example.com"],
+      apiKey: "key",
+    });
+    const arg = sendMock.mock.calls[0][0];
+    expect(arg.to).toEqual(["a@example.com", "b@example.com"]);
+  });
+
   it("usa asunto singular cuando hay una oferta", async () => {
     await sendNewOffersEmail({
       offers: [sampleOffer],
-      recipient: "novia@example.com",
+      recipients: ["novia@example.com"],
       apiKey: "key",
     });
     const arg = sendMock.mock.calls[0][0];
@@ -68,7 +78,7 @@ describe("sendNewOffersEmail", () => {
     await expect(
       sendNewOffersEmail({
         offers: [sampleOffer],
-        recipient: "novia@example.com",
+        recipients: ["novia@example.com"],
         apiKey: "key",
       }),
     ).rejects.toThrow(/rate limit/);
@@ -81,7 +91,7 @@ describe("sendNewOffersEmail", () => {
     };
     await sendNewOffersEmail({
       offers: [malicious],
-      recipient: "novia@example.com",
+      recipients: ["novia@example.com"],
       apiKey: "key",
     });
     const arg = sendMock.mock.calls[0][0];
@@ -92,7 +102,7 @@ describe("sendNewOffersEmail", () => {
   it("no envía email cuando offers está vacío", async () => {
     await sendNewOffersEmail({
       offers: [],
-      recipient: "novia@example.com",
+      recipients: ["novia@example.com"],
       apiKey: "key",
     });
     expect(sendMock).not.toHaveBeenCalled();
