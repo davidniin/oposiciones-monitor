@@ -32,6 +32,11 @@ export async function fetchOffers({ timeoutMs = 30000, retries = 2 } = {}) {
       const html = await res.text();
       return parseOffers(html);
     } catch (err) {
+      // undici wraps the real network error (DNS, timeout, reset, TLS) in err.cause
+      if (err.cause) {
+        const cause = err.cause.code ? `${err.cause.code}: ${err.cause.message}` : err.cause.message;
+        err.message = `${err.message} (${cause})`;
+      }
       lastError = err;
       if (attempt < retries) {
         const delay = 5000 * (attempt + 1);
